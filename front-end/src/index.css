@@ -1,0 +1,105 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 140 33% 98%;
+    --foreground: 160 50% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 50% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 50% 12%;
+
+    --primary: 150 40% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 84% 17%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 140 10% 94%;
+    --muted-foreground: 160 5% 45%;
+
+    --accent: 150 40% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 140 20% 90%;
+    --input: 140 20% 90%;
+    --ring: 150 40% 53%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-sm;
+  }
+  
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-white/20 shadow-md;
+  }
+
+  .cesi-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .button-hover {
+    @apply transform hover:scale-[1.03] active:scale-[0.98] transition-all duration-300;
+  }
+
+  .page-transition {
+    @apply opacity-0;
+    animation: pageEnter 0.4s ease-out forwards;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px white inset;
+  box-shadow: 0 0 0px 1000px white inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
