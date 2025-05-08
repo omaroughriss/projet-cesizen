@@ -35,7 +35,7 @@ export class AuthService {
           ...rest,
           password: hashedPassword,
           activated: true,
-          roleId: 1,
+          roleId: 2,
         },
       });
 
