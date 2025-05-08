@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './category.dto';
 import { AuthUser } from 'src/auth/types/user.type';
@@ -56,6 +56,23 @@ export class CategoryService {
         "Vous n'êtes pas autorisé à accéder à cette ressource",
       );
     }
+
+
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      include: { article: true }
+    });
+
+    if (!category) {
+      throw new BadRequestException('Catégorie non trouvée');
+    }
+
+    if (category.article.length > 0) {
+      throw new BadRequestException(
+        'Impossible de supprimer cette catégorie car elle contient des articles. Veuillez d\'abord supprimer ou déplacer les articles associés.'
+      );
+    }
+
     return this.prisma.category.delete({ where: { id } });
   }
 }
