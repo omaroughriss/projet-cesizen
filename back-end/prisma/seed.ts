@@ -64,6 +64,7 @@ async function main() {
       data: {
         title: 'Introduction à React',
         content: 'React est une bibliothèque JavaScript pour créer des interfaces utilisateur...',
+        image: 'https://exemple.com/images/react-intro.jpg',
         categoryId: categories[0].id,
       },
     }),
@@ -71,6 +72,7 @@ async function main() {
       data: {
         title: 'Principes de Design UI/UX',
         content: 'Le design UI/UX est crucial pour créer des applications conviviales...',
+        image: 'https://exemple.com/images/design-principles.jpg',
         categoryId: categories[1].id,
       },
     }),

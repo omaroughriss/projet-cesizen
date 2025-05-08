@@ -13,6 +13,10 @@ export class CreateArticleDto {
   @MinLength(1)
   content: string;
 
+  @IsString()
+  @MinLength(1)
+  image: string;
+
   @IsInt()
   categoryId: number;
 }
