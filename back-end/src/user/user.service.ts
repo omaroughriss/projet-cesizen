@@ -27,7 +27,6 @@ export class UserService {
       data: {
         ...data,
         password: hashedPassword,
-        roleId: 1,
       },
       include: {
         role: true,
@@ -88,9 +87,14 @@ export class UserService {
       );
     }
 
+    const updateData = { ...data };
+    if (updateData.password) {
+      updateData.password = await this.hashPassword(updateData.password);
+    }
+
     return this.prisma.user.update({
       where: { id },
-      data,
+      data: updateData,
     });
   }
 
