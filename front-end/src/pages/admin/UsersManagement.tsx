@@ -155,8 +155,13 @@ const UsersManagement: React.FC = () => {
   const handleEditUser = async () => {
     if (currentUser) {
       try {
-        const { id, role, ...updateData } = currentUser;
-        await userService.updateUser(id, updateData as UpdateUserDto);
+        const { id, role, password, ...updateData } = currentUser;
+        const dataToUpdate = {
+          ...updateData,
+          ...(password ? { password } : {})
+        } as UpdateUserDto;
+        
+        await userService.updateUser(id, dataToUpdate);
         await fetchUsers();
         setCurrentUser(null);
         setIsEditDialogOpen(false);
