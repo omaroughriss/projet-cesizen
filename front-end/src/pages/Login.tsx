@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Logo from '@/components/Logo';
+import { authService } from '@/services/auth.service';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,29 +19,35 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      if (email && password) {
-        // Store the user's name in localStorage for the welcome message
-        localStorage.setItem('userName', email.split('@')[0]);
-        navigate('/');
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue sur CESIZen",
-        });
-      } else {
-        toast({
-          title: "Erreur de connexion",
-          description: "Veuillez remplir tous les champs",
-          variant: "destructive",
-        });
+    try {
+      if (!email || !password) {
+        throw new Error('Veuillez remplir tous les champs');
       }
-    }, 1000);
+
+      const response = await authService.login(email, password);
+      
+      // Store the token and user info
+      localStorage.setItem('token', response.accessToken);
+      localStorage.setItem('userName', response.user.firstName);
+      
+      navigate('/');
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur CESIZen",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur de connexion",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la connexion",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,10 +120,7 @@ const Login: React.FC = () => {
             <button 
               type="button" 
               className="text-sm text-muted-foreground hover:text-cesilite cesi-transition"
-              onClick={() => toast({
-                title: "Fonction à venir",
-                description: "L'inscription sera disponible prochainement",
-              })}
+              onClick={() => navigate('/register')}
             >
               Pas encore de compte ? <span className="text-cesilite font-medium">Créer un compte</span>
             </button>
