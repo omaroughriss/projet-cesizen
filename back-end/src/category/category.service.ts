@@ -14,7 +14,14 @@ export class CategoryService {
         "Vous n'êtes pas autorisé à accéder à cette ressource",
       );
     }
-    return this.prisma.category.create({ data });
+    return this.prisma.category.create({ 
+      data,
+      include: {
+        _count: {
+          select: { article: true }
+        }
+      }
+    });
   }
 
   async getAllCategories(currentUser: AuthUser) {
@@ -23,7 +30,13 @@ export class CategoryService {
         "Vous n'êtes pas autorisé à accéder à cette ressource",
       );
     }
-    return this.prisma.category.findMany();
+    return this.prisma.category.findMany({
+      include: {
+        _count: {
+          select: { article: true }
+        }
+      }
+    });
   }
 
   async getCategoryById(id: number, currentUser: AuthUser) {
@@ -34,6 +47,11 @@ export class CategoryService {
     }
     return this.prisma.category.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: { article: true }
+        }
+      }
     });
   }
 
@@ -47,7 +65,15 @@ export class CategoryService {
         "Vous n'êtes pas autorisé à accéder à cette ressource",
       );
     }
-    return this.prisma.category.update({ where: { id }, data });
+    return this.prisma.category.update({ 
+      where: { id }, 
+      data,
+      include: {
+        _count: {
+          select: { article: true }
+        }
+      }
+    });
   }
 
   async deleteCategory(id: number, currentUser: AuthUser) {
@@ -57,17 +83,20 @@ export class CategoryService {
       );
     }
 
-
     const category = await this.prisma.category.findUnique({
       where: { id },
-      include: { article: true }
+      include: { 
+        _count: {
+          select: { article: true }
+        }
+      }
     });
 
     if (!category) {
       throw new BadRequestException('Catégorie non trouvée');
     }
 
-    if (category.article.length > 0) {
+    if (category._count.article > 0) {
       throw new BadRequestException(
         'Impossible de supprimer cette catégorie car elle contient des articles. Veuillez d\'abord supprimer ou déplacer les articles associés.'
       );
