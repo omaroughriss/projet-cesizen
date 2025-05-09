@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
@@ -31,54 +30,76 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Plus, Pencil, Trash2, Tag } from 'lucide-react';
-
-// Mock data
-const mockCategories = [
-  { id: 1, name: "Stress", articlesCount: 3 },
-  { id: 2, name: "Sommeil", articlesCount: 1 },
-  { id: 3, name: "Emotions", articlesCount: 2 }
-];
+import { categoryService } from '@/services/category.service';
+import { Category, CreateCategoryDto } from '@/types';
 
 const CategoriesManagement: React.FC = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState<any>(null);
-  const [newCategory, setNewCategory] = useState({ name: "" });
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+  const [newCategory, setNewCategory] = useState<CreateCategoryDto>({ categoryName: "" });
 
-  const handleCreateCategory = () => {
-    const id = Math.max(...categories.map(c => c.id)) + 1;
-    setCategories([...categories, { id, name: newCategory.name, articlesCount: 0 }]);
-    setNewCategory({ name: "" });
-    setIsCreateDialogOpen(false);
-  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-  const handleEditCategory = () => {
-    if (currentCategory) {
-      setCategories(categories.map(category => 
-        category.id === currentCategory.id ? { ...currentCategory } : category
-      ));
-      setCurrentCategory(null);
-      setIsEditDialogOpen(false);
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryService.getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
-  const handleDeleteCategory = () => {
+  const handleCreateCategory = async () => {
+    try {
+      await categoryService.createCategory(newCategory);
+      await fetchCategories();
+      setNewCategory({ categoryName: "" });
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating category:', error);
+    }
+  };
+
+  const handleEditCategory = async () => {
     if (currentCategory) {
-      setCategories(categories.filter(category => category.id !== currentCategory.id));
-      setCurrentCategory(null);
-      setIsDeleteDialogOpen(false);
+      try {
+        await categoryService.updateCategory(currentCategory.id, {
+          categoryName: currentCategory.categoryName
+        });
+        await fetchCategories();
+        setCurrentCategory(null);
+        setIsEditDialogOpen(false);
+      } catch (error) {
+        console.error('Error updating category:', error);
+      }
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (currentCategory) {
+      try {
+        await categoryService.deleteCategory(currentCategory.id);
+        await fetchCategories();
+        setCurrentCategory(null);
+        setIsDeleteDialogOpen(false);
+      } catch (error) {
+        console.error('Error deleting category:', error);
+      }
     }
   };
   
-  const openEditDialog = (category: any) => {
+  const openEditDialog = (category: Category) => {
     setCurrentCategory({ ...category });
     setIsEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (category: any) => {
+  const openDeleteDialog = (category: Category) => {
     setCurrentCategory(category);
     setIsDeleteDialogOpen(true);
   };
@@ -124,10 +145,10 @@ const CategoriesManagement: React.FC = () => {
                   <TableCell className="font-medium flex items-center">
                     <Tag className="h-4 w-4 mr-2 text-cesidark" />
                     <Badge variant="outline" className="bg-cesilite/10 text-cesidark">
-                      {category.name}
+                      {category.categoryName}
                     </Badge>
                   </TableCell>
-                  <TableCell>{category.articlesCount}</TableCell>
+                  <TableCell>{category._count.article}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
@@ -143,7 +164,7 @@ const CategoriesManagement: React.FC = () => {
                         size="sm"
                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         onClick={() => openDeleteDialog(category)}
-                        disabled={category.articlesCount > 0}
+                        disabled={category._count.article > 0}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -171,8 +192,8 @@ const CategoriesManagement: React.FC = () => {
               <label htmlFor="category-name" className="text-sm font-medium">Nom de la catégorie</label>
               <Input 
                 id="category-name" 
-                value={newCategory.name} 
-                onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                value={newCategory.categoryName} 
+                onChange={(e) => setNewCategory({...newCategory, categoryName: e.target.value})}
                 placeholder="Ex: Nutrition"
               />
             </div>
@@ -188,7 +209,7 @@ const CategoriesManagement: React.FC = () => {
             <Button 
               className="bg-cesilite hover:bg-cesidark"
               onClick={handleCreateCategory}
-              disabled={!newCategory.name}
+              disabled={!newCategory.categoryName}
             >
               Créer
             </Button>
@@ -212,8 +233,8 @@ const CategoriesManagement: React.FC = () => {
                 <label htmlFor="edit-category-name" className="text-sm font-medium">Nom de la catégorie</label>
                 <Input 
                   id="edit-category-name" 
-                  value={currentCategory.name} 
-                  onChange={(e) => setCurrentCategory({...currentCategory, name: e.target.value})}
+                  value={currentCategory.categoryName} 
+                  onChange={(e) => setCurrentCategory({...currentCategory, categoryName: e.target.value})}
                 />
               </div>
             </div>
@@ -229,7 +250,7 @@ const CategoriesManagement: React.FC = () => {
             <Button 
               className="bg-cesilite hover:bg-cesidark"
               onClick={handleEditCategory}
-              disabled={!currentCategory?.name}
+              disabled={!currentCategory?.categoryName}
             >
               Enregistrer
             </Button>
@@ -243,11 +264,11 @@ const CategoriesManagement: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer la catégorie</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer la catégorie "{currentCategory?.name}" ? 
+              Êtes-vous sûr de vouloir supprimer la catégorie "{currentCategory?.categoryName}" ? 
               Cette action est irréversible.
-              {currentCategory?.articlesCount > 0 && (
+              {currentCategory && currentCategory._count.article > 0 && (
                 <p className="mt-2 text-red-500">
-                  Cette catégorie contient {currentCategory.articlesCount} article(s). 
+                  Cette catégorie contient {currentCategory._count.article} article(s). 
                   Veuillez d'abord déplacer ou supprimer ces articles.
                 </p>
               )}
@@ -258,7 +279,7 @@ const CategoriesManagement: React.FC = () => {
             <AlertDialogAction 
               className="bg-red-500 hover:bg-red-600 text-white"
               onClick={handleDeleteCategory}
-              disabled={currentCategory?.articlesCount > 0}
+              disabled={currentCategory?._count.article > 0}
             >
               Supprimer
             </AlertDialogAction>
