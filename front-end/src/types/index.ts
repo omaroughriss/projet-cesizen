@@ -20,11 +20,12 @@ export interface CreateUserDto {
     roleId: number;
 }
 
+export interface UpdateUserDto extends Partial<CreateUserDto> {}
+
 // Types pour les rôles
 export interface Role {
     id: number;
     roleName: string;
-    users: User[];
 }
 
 export interface CreateRoleDto {
@@ -48,6 +49,9 @@ export interface Category {
     id: number;
     categoryName: string;
     article: Article[];
+    _count: {
+        article: number;
+    };
 }
 
 export interface CreateCategoryDto {
@@ -72,4 +76,5 @@ export interface AuthUser {
     roleId: number;
     activated: boolean;
     role: Role;
+    roleName: string;
 } 

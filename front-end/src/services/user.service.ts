@@ -1,5 +1,5 @@
 import api from './api';
-import { User, CreateUserDto } from '@/types';
+import { User, CreateUserDto, UpdateUserDto } from '@/types';
 
 export const userService = {
     getAllUsers: async () => {
@@ -17,14 +17,13 @@ export const userService = {
         return response.data;
     },
 
-    updateUser: async (id: number, data: Partial<CreateUserDto>) => {
+    updateUser: async (id: number, data: UpdateUserDto) => {
         const response = await api.put<User>(`/users/${id}`, data);
         return response.data;
     },
 
     deleteUser: async (id: number) => {
-        const response = await api.delete<void>(`/users/${id}`);
-        return response.data;
+        await api.delete(`/users/${id}`);
     },
 
     desactivateUser: async (id: number) => {
@@ -35,5 +34,5 @@ export const userService = {
     reactivateUser: async (id: number) => {
         const response = await api.put<User>(`/users/${id}/reactivate`);
         return response.data;
-    },
+    }
 }; 
