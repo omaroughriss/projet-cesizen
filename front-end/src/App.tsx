@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Articles from "./pages/Articles";
@@ -46,29 +47,29 @@ const App = () => (
             
             {/* Routes admin protégées */}
             <Route path="/admin" element={
-              <PrivateRoute>
+              <AdminRoute>
                 <Admin />
-              </PrivateRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/users" element={
-              <PrivateRoute>
+              <AdminRoute>
                 <UsersManagement />
-              </PrivateRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/articles" element={
-              <PrivateRoute>
+              <AdminRoute>
                 <ArticlesManagement />
-              </PrivateRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/categories" element={
-              <PrivateRoute>
+              <AdminRoute>
                 <CategoriesManagement />
-              </PrivateRoute>
+              </AdminRoute>
             } />
             <Route path="/admin/stress-questionnaire" element={
-              <PrivateRoute>
+              <AdminRoute>
                 <StressQuestionnaireManagement />
-              </PrivateRoute>
+              </AdminRoute>
             } />
             
             <Route path="*" element={<NotFound />} />
