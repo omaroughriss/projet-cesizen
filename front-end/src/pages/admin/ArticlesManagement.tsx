@@ -106,17 +106,17 @@ const ArticlesManagement: React.FC = () => {
     if (file) {
       if (type === "new") {
         setSelectedImage(file);
-        const imageUrl = URL.createObjectURL(file);
-        setNewArticle({ ...newArticle, image: imageUrl });
+        const previewUrl = URL.createObjectURL(file);
+        setNewArticle({ ...newArticle, image: previewUrl });
       } else {
         setEditSelectedImage(file);
         if (currentArticle) {
-          const imageUrl = URL.createObjectURL(file);
-          setCurrentArticle({ ...currentArticle, image: imageUrl });
+          const previewUrl = URL.createObjectURL(file);
+          setCurrentArticle({ ...currentArticle, image: previewUrl });
         }
       }
       toast({
-        title: "Image téléchargée",
+        title: "Image sélectionnée",
         description: "L'image a bien été sélectionnée",
       });
     }
@@ -124,7 +124,16 @@ const ArticlesManagement: React.FC = () => {
 
   const handleCreateArticle = async () => {
     try {
-      await articleService.createArticle(newArticle);
+      if (!selectedImage) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez sélectionner une image",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const createdArticle = await articleService.createArticle(newArticle, selectedImage);
       await fetchArticles();
       setNewArticle({ title: "", content: "", image: "", categoryId: 0 });
       setSelectedImage(null);
@@ -146,12 +155,16 @@ const ArticlesManagement: React.FC = () => {
   const handleEditArticle = async () => {
     if (currentArticle) {
       try {
-        await articleService.updateArticle(currentArticle.id, {
-          title: currentArticle.title,
-          content: currentArticle.content,
-          image: currentArticle.image,
-          categoryId: currentArticle.categoryId
-        });
+        const updatedArticle = await articleService.updateArticle(
+          currentArticle.id, 
+          {
+            title: currentArticle.title,
+            content: currentArticle.content,
+            image: currentArticle.image,
+            categoryId: currentArticle.categoryId
+          },
+          editSelectedImage || undefined
+        );
         await fetchArticles();
         setCurrentArticle(null);
         setEditSelectedImage(null);
