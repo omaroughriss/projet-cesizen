@@ -29,12 +29,20 @@ const Login: React.FC = () => {
       }
 
       const response = await authService.login(email, password);
+
+      if (!response.user.activated) {
+        throw new Error('Votre compte est désactivé. Veuillez contacter un administrateur.');
+      }
       
       // Store the token and user info
       localStorage.setItem('token', response.accessToken);
       localStorage.setItem('userName', response.user.firstName);
+      localStorage.setItem('userRole', response.user.roleName);
       
-      navigate('/');
+      // Redirection basée sur le rôle
+      const redirectPath = response.user.roleName === 'administrateur' ? '/admin' : '/';
+      navigate(redirectPath);
+      
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur CESIZen",
