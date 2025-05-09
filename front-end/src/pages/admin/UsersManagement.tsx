@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
@@ -39,96 +38,169 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Search, ArrowLeft, UserPlus, RefreshCw, Trash2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { userService } from '@/services/user.service';
+import { User, CreateUserDto, UpdateUserDto } from '@/types';
 
-// Mock data
-const mockUsers = [
-  { id: 1, firstName: "Jean", lastName: "Dupont", email: "jean@example.com", role: "Utilisateur", active: true },
-  { id: 2, firstName: "Marie", lastName: "Martin", email: "marie@example.com", role: "Administrateur", active: true },
-  { id: 3, firstName: "Pierre", lastName: "Durand", email: "pierre@example.com", role: "Utilisateur", active: false },
-  { id: 4, firstName: "Sophie", lastName: "Lefebvre", email: "sophie@example.com", role: "Utilisateur", active: true },
-  { id: 5, firstName: "Thomas", lastName: "Bernard", email: "thomas@example.com", role: "Utilisateur", active: true }
-];
+interface EditUser extends User {
+  password?: string;
+}
 
-const mockRoles = ["Utilisateur", "Administrateur"];
+const mockRoles = ["utilisateur", "administrateur"];
+
+const ROLE_MAP = {
+  "utilisateur": 2,
+  "administrateur": 1
+};
+
+const ROLE_MAP_REVERSE = {
+  2: "utilisateur",
+  1: "administrateur"
+} as const;
 
 const UsersManagement: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [newUser, setNewUser] = useState({ 
+  const [currentUser, setCurrentUser] = useState<EditUser | null>(null);
+  const [newUser, setNewUser] = useState<CreateUserDto>({ 
     firstName: "", 
     lastName: "", 
     email: "", 
+    username: "",
     password: "",
-    role: "Utilisateur", 
-    active: true 
+    activated: true,
+    roleId: 2
   });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await userService.getAllUsers();
+      setUsers(data);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les utilisateurs",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredUsers = users.filter(user => 
     user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+    user.role.roleName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleToggleUserStatus = (id: number) => {
-    setUsers(users.map(user => 
-      user.id === id ? { ...user, active: !user.active } : user
-    ));
-    toast({
-      title: "Statut modifié",
-      description: "Le statut de l'utilisateur a été mis à jour",
-    });
-  };
-
-  const handleCreateUser = () => {
-    const id = Math.max(...users.map(u => u.id)) + 1;
-    setUsers([...users, { ...newUser, id }]);
-    setNewUser({ firstName: "", lastName: "", email: "", password: "", role: "Utilisateur", active: true });
-    setIsCreateDialogOpen(false);
-    toast({
-      title: "Utilisateur créé",
-      description: "Le nouvel utilisateur a été créé avec succès",
-    });
-  };
-
-  const handleEditUser = () => {
-    if (currentUser) {
-      setUsers(users.map(user => 
-        user.id === currentUser.id ? currentUser : user
-      ));
-      setCurrentUser(null);
-      setIsEditDialogOpen(false);
+  const handleToggleUserStatus = async (id: number, activated: boolean) => {
+    try {
+      if (activated) {
+        await userService.desactivateUser(id);
+      } else {
+        await userService.reactivateUser(id);
+      }
+      await fetchUsers();
       toast({
-        title: "Utilisateur modifié",
-        description: "L'utilisateur a été modifié avec succès",
+        title: "Succès",
+        description: "Le statut de l'utilisateur a été mis à jour",
       });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut de l'utilisateur",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateUser = async () => {
+    try {
+      await userService.createUser(newUser);
+      await fetchUsers();
+      setNewUser({ 
+        firstName: "", 
+        lastName: "", 
+        email: "", 
+        username: "",
+        password: "", 
+        activated: true, 
+        roleId: 2 
+      });
+      setIsCreateDialogOpen(false);
+      toast({
+        title: "Succès",
+        description: "Le nouvel utilisateur a été créé avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'utilisateur",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditUser = async () => {
+    if (currentUser) {
+      try {
+        const { id, role, ...updateData } = currentUser;
+        await userService.updateUser(id, updateData as UpdateUserDto);
+        await fetchUsers();
+        setCurrentUser(null);
+        setIsEditDialogOpen(false);
+        toast({
+          title: "Succès",
+          description: "L'utilisateur a été modifié avec succès",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de modifier l'utilisateur",
+          variant: "destructive",
+        });
+      }
     }
   };
   
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (currentUser) {
-      setUsers(users.filter(user => user.id !== currentUser.id));
-      setCurrentUser(null);
-      setIsDeleteDialogOpen(false);
-      toast({
-        title: "Utilisateur supprimé",
-        description: "L'utilisateur a été supprimé avec succès",
-      });
+      try {
+        await userService.deleteUser(currentUser.id);
+        await fetchUsers();
+        setCurrentUser(null);
+        setIsDeleteDialogOpen(false);
+        toast({
+          title: "Succès",
+          description: "L'utilisateur a été supprimé avec succès",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer l'utilisateur",
+          variant: "destructive",
+        });
+      }
     }
   };
 
-  const openEditDialog = (user: any) => {
+  const openEditDialog = (user: User) => {
     setCurrentUser({ ...user, password: "" });
     setIsEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (user: any) => {
+  const openDeleteDialog = (user: User) => {
     setCurrentUser(user);
     setIsDeleteDialogOpen(true);
   };
@@ -191,21 +263,27 @@ const UsersManagement: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-6">
+                    Chargement...
+                  </TableCell>
+                </TableRow>
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.lastName}</TableCell>
                     <TableCell>{user.firstName}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
+                    <TableCell>{user.role.roleName}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <Switch 
-                          checked={user.active} 
-                          onCheckedChange={() => handleToggleUserStatus(user.id)}
+                          checked={user.activated} 
+                          onCheckedChange={() => handleToggleUserStatus(user.id, user.activated)}
                         />
-                        <span className={user.active ? "text-green-600" : "text-red-600"}>
-                          {user.active ? "Actif" : "Inactif"}
+                        <span className={user.activated ? "text-green-600" : "text-red-600"}>
+                          {user.activated ? "Actif" : "Inactif"}
                         </span>
                       </div>
                     </TableCell>
@@ -245,7 +323,7 @@ const UsersManagement: React.FC = () => {
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
             <DialogDescription>
@@ -275,6 +353,15 @@ const UsersManagement: React.FC = () => {
             </div>
             
             <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">Nom d'utilisateur</label>
+              <Input 
+                id="username" 
+                value={newUser.username} 
+                onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+              />
+            </div>
+            
+            <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
               <Input 
                 id="email" 
@@ -297,16 +384,15 @@ const UsersManagement: React.FC = () => {
             <div className="space-y-2">
               <label htmlFor="role" className="text-sm font-medium">Rôle</label>
               <Select 
-                value={newUser.role} 
-                onValueChange={(value) => setNewUser({...newUser, role: value})}
+                value={newUser.roleId === 1 ? "administrateur" : "utilisateur"} 
+                onValueChange={(value) => setNewUser({...newUser, roleId: ROLE_MAP[value as keyof typeof ROLE_MAP]})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un rôle" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockRoles.map((role) => (
-                    <SelectItem key={role} value={role}>{role}</SelectItem>
-                  ))}
+                  <SelectItem value="utilisateur">Utilisateur</SelectItem>
+                  <SelectItem value="administrateur">Administrateur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -314,8 +400,8 @@ const UsersManagement: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Switch 
                 id="active" 
-                checked={newUser.active} 
-                onCheckedChange={(checked) => setNewUser({...newUser, active: checked})}
+                checked={newUser.activated} 
+                onCheckedChange={(checked) => setNewUser({...newUser, activated: checked})}
               />
               <label htmlFor="active" className="text-sm font-medium">Compte actif</label>
             </div>
@@ -341,7 +427,7 @@ const UsersManagement: React.FC = () => {
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Modifier l'utilisateur</DialogTitle>
             <DialogDescription>
@@ -372,6 +458,15 @@ const UsersManagement: React.FC = () => {
               </div>
               
               <div className="space-y-2">
+                <label htmlFor="edit-username" className="text-sm font-medium">Nom d'utilisateur</label>
+                <Input 
+                  id="edit-username" 
+                  value={currentUser.username} 
+                  onChange={(e) => setCurrentUser({...currentUser, username: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
                 <label htmlFor="edit-email" className="text-sm font-medium">Email</label>
                 <Input 
                   id="edit-email" 
@@ -395,16 +490,15 @@ const UsersManagement: React.FC = () => {
               <div className="space-y-2">
                 <label htmlFor="edit-role" className="text-sm font-medium">Rôle</label>
                 <Select 
-                  value={currentUser.role} 
-                  onValueChange={(value) => setCurrentUser({...currentUser, role: value})}
+                  value={ROLE_MAP_REVERSE[currentUser.roleId as keyof typeof ROLE_MAP_REVERSE]}
+                  onValueChange={(value) => setCurrentUser({...currentUser, roleId: ROLE_MAP[value as keyof typeof ROLE_MAP]})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un rôle" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockRoles.map((role) => (
-                      <SelectItem key={role} value={role}>{role}</SelectItem>
-                    ))}
+                    <SelectItem value="utilisateur">Utilisateur</SelectItem>
+                    <SelectItem value="administrateur">Administrateur</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -412,8 +506,8 @@ const UsersManagement: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Switch 
                   id="edit-active" 
-                  checked={currentUser.active} 
-                  onCheckedChange={(checked) => setCurrentUser({...currentUser, active: checked})}
+                  checked={currentUser.activated} 
+                  onCheckedChange={(checked) => setCurrentUser({...currentUser, activated: checked})}
                 />
                 <label htmlFor="edit-active" className="text-sm font-medium">Compte actif</label>
               </div>
