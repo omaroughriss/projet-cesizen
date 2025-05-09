@@ -28,7 +28,6 @@ const Profile: React.FC = () => {
           description: "Impossible de charger les informations du profil",
           variant: "destructive"
         });
-        // If we can't load the profile, redirect to login
         handleLogout();
       }
     };

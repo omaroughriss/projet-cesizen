@@ -18,7 +18,6 @@ const Navbar: React.FC = () => {
     { name: 'Profil', path: '/profile', icon: User }
   ];
 
-  // Mobile Bottom Navigation - now with sticky positioning
   if (isMobile) {
     return (
       <div className="sticky bottom-0 left-0 right-0 z-50">
@@ -42,7 +41,6 @@ const Navbar: React.FC = () => {
     );
   }
 
-  // Desktop Top Navigation
   return (
     <>
       {/* Top Navbar */}

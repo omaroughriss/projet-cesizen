@@ -9,7 +9,6 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     const token = localStorage.getItem('token');
 
     if (!token) {
-        // Rediriger vers la page de connexion tout en sauvegardant la page d'origine
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 

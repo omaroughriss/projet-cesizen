@@ -20,7 +20,6 @@ const StressItem: React.FC<StressItemProps> = ({
   onChange,
   index
 }) => {
-  // Calculate staggered animation delay based on index
   const delay = index * 50;
 
   return (

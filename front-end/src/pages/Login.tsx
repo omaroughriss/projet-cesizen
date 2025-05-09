@@ -34,7 +34,6 @@ const Login: React.FC = () => {
         throw new Error('Votre compte est désactivé. Veuillez contacter un administrateur.');
       }
       
-      // Store the token and user info
       localStorage.setItem('token', response.accessToken);
       localStorage.setItem('userName', response.user.firstName);
       localStorage.setItem('userRole', response.user.roleName);

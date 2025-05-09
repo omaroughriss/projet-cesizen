@@ -6,12 +6,10 @@ const Home: React.FC = () => {
   const [userName, setUserName] = useState('');
   
   useEffect(() => {
-    // Get user name from localStorage (set during login)
     const storedName = localStorage.getItem('userName');
     setUserName(storedName || 'Utilisateur');
   }, []);
 
-  // Feature card data
   const features = [
     {
       title: "Santé Mentale",
