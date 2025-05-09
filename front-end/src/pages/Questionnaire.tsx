@@ -1,52 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import StressItem from '@/components/StressItem';
 import Layout from '@/components/Layout';
 import { useToast } from "@/hooks/use-toast";
-
-// Stress event data
-const stressEvents = [
-  { id: 'event1', label: 'Perte d\'un proche', points: 100 },
-  { id: 'event2', label: 'Divorce', points: 73 },
-  { id: 'event3', label: 'Séparation', points: 65 },
-  { id: 'event4', label: 'Problème de santé personnel', points: 53 },
-  { id: 'event5', label: 'Perte d\'emploi', points: 47 },
-  { id: 'event6', label: 'Problème de santé d\'un proche', points: 44 },
-  { id: 'event7', label: 'Mariage', points: 50 },
-  { id: 'event8', label: 'Perte de revenu', points: 38 },
-  { id: 'event9', label: 'Changement de travail', points: 36 },
-  { id: 'event10', label: 'Déménagement', points: 30 },
-  { id: 'event11', label: 'Difficultés financières', points: 29 },
-  { id: 'event12', label: 'Conflit familial', points: 29 },
-  { id: 'event13', label: 'Changement d\'horaires de travail', points: 20 },
-  { id: 'event14', label: 'Vacances', points: 13 },
-];
+import { questionService } from '@/services/question.service';
+import { Question } from '@/types';
 
 const Questionnaire: React.FC = () => {
-  const [checkedEvents, setCheckedEvents] = useState<Record<string, boolean>>({});
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [checkedQuestions, setCheckedQuestions] = useState<Record<string, boolean>>({});
   const [showResults, setShowResults] = useState(false);
   const [totalScore, setTotalScore] = useState(0);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    try {
+      const fetchedQuestions = await questionService.getAllQuestions();
+      setQuestions(fetchedQuestions);
+      setLoading(false);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les questions",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
   const handleChange = (id: string, checked: boolean) => {
-    setCheckedEvents(prev => ({
+    setCheckedQuestions(prev => ({
       ...prev,
       [id]: checked
     }));
   };
 
   const calculateResults = () => {
-    const score = stressEvents.reduce((total, event) => {
-      return total + (checkedEvents[event.id] ? event.points : 0);
+    const score = questions.reduce((total, question) => {
+      return total + (checkedQuestions[question.id.toString()] ? question.score : 0);
     }, 0);
     
     setTotalScore(score);
     setShowResults(true);
     
-    // Scroll to results
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
@@ -61,13 +65,23 @@ const Questionnaire: React.FC = () => {
   const stressEvaluation = getStressLevel(totalScore);
 
   const resetQuestionnaire = () => {
-    setCheckedEvents({});
+    setCheckedQuestions({});
     setShowResults(false);
     toast({
       title: "Questionnaire réinitialisé",
       description: "Vous pouvez maintenant refaire le diagnostic",
     });
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-screen">
+          <p>Chargement des questions...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -131,14 +145,14 @@ const Questionnaire: React.FC = () => {
             </div>
             
             <div className="mb-6">
-              {stressEvents.map((event, index) => (
+              {questions.map((question, index) => (
                 <StressItem
-                  key={event.id}
-                  id={event.id}
-                  label={event.label}
-                  points={event.points}
-                  checked={!!checkedEvents[event.id]}
-                  onChange={(checked) => handleChange(event.id, checked)}
+                  key={question.id}
+                  id={question.id.toString()}
+                  label={question.question}
+                  points={question.score}
+                  checked={!!checkedQuestions[question.id.toString()]}
+                  onChange={(checked) => handleChange(question.id.toString(), checked)}
                   index={index}
                 />
               ))}
