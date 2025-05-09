@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,22 +6,37 @@ import { LogOut } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { authService } from '@/services/auth.service';
+import { AuthUser } from '@/types';
 
 const Profile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [email, setEmail] = useState('');
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get user details from localStorage
-    const storedName = localStorage.getItem('userName');
-    setEmail(storedName ? `${storedName}@example.com` : '');
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await authService.me();
+        setUser(userData);
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les informations du profil",
+          variant: "destructive"
+        });
+        // If we can't load the profile, redirect to login
+        handleLogout();
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
-  const saveProfile = () => {
-    // Validate that both password fields are filled
+  const saveProfile = async () => {
     if (!currentPassword || !newPassword) {
       toast({
         title: "Champs requis",
@@ -32,20 +46,53 @@ const Profile: React.FC = () => {
       return;
     }
 
-    // Simply show success message since we're not actually changing a password
-    toast({
-      title: "Profil mis à jour",
-      description: "Votre mot de passe a été modifié avec succès",
-    });
-    
-    // Reset password fields after save
-    setCurrentPassword('');
-    setNewPassword('');
+    if (newPassword.length < 6) {
+      toast({
+        title: "Mot de passe invalide",
+        description: "Le nouveau mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      toast({
+        title: "Mot de passe invalide",
+        description: "Le nouveau mot de passe doit être différent de l'ancien",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.changePassword({
+        currentPassword,
+        newPassword
+      });
+
+      toast({
+        title: "Profil mis à jour",
+        description: "Votre mot de passe a été modifié avec succès",
+      });
+      
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la modification du mot de passe",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
     localStorage.removeItem('userName');
-    navigate('/');
+    navigate('/login');
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt !",
@@ -69,7 +116,7 @@ const Profile: React.FC = () => {
               <Input 
                 id="email" 
                 type="email"
-                value={email}
+                value={user?.email || ''}
                 disabled
                 className="bg-muted border-cesilite/30"
               />
@@ -102,8 +149,9 @@ const Profile: React.FC = () => {
             <Button 
               className="w-full bg-cesilite hover:bg-cesidark button-hover"
               onClick={saveProfile}
+              disabled={loading}
             >
-              Modifier le mot de passe
+              {loading ? 'Modification en cours...' : 'Modifier le mot de passe'}
             </Button>
           </div>
         </div>
