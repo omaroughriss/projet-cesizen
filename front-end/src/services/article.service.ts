@@ -8,25 +8,93 @@ export interface CreateArticleDto {
     categoryId: number;
 }
 
+// Constante pour l'URL de base de l'API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('/uploads/')) return `${API_BASE_URL}${imagePath}`;
+    return `${API_BASE_URL}/uploads/${imagePath}`;
+};
+
 export const articleService = {
+    uploadImage: async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await api.post('/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            return response.data.filename;
+        } catch (error) {
+            console.error('Erreur lors de l\'upload:', error);
+            throw error;
+        }
+    },
+
     getAllArticles: async () => {
         const response = await api.get<Article[]>('/articles');
-        return response.data;
+        return response.data.map(article => ({
+            ...article,
+            image: getImageUrl(article.image)
+        }));
     },
 
     getArticleById: async (id: number) => {
         const response = await api.get<Article>(`/articles/${id}`);
-        return response.data;
+        return {
+            ...response.data,
+            image: getImageUrl(response.data.image)
+        };
     },
 
-    createArticle: async (data: CreateArticleDto) => {
-        const response = await api.post<Article>('/articles', data);
-        return response.data;
+    createArticle: async (data: CreateArticleDto, file?: File) => {
+        let imageUrl = data.image;
+        if (file) {
+            try {
+                const filename = await articleService.uploadImage(file);
+                imageUrl = filename; // On stocke juste le nom du fichier
+            } catch (error) {
+                throw new Error('Erreur lors de l\'upload de l\'image');
+            }
+        }
+
+        const response = await api.post<Article>('/articles', {
+            ...data,
+            image: imageUrl
+        });
+
+        return {
+            ...response.data,
+            image: getImageUrl(response.data.image)
+        };
     },
 
-    updateArticle: async (id: number, data: Partial<CreateArticleDto>) => {
-        const response = await api.put<Article>(`/articles/${id}`, data);
-        return response.data;
+    updateArticle: async (id: number, data: Partial<CreateArticleDto>, file?: File) => {
+        let imageUrl = data.image;
+        if (file) {
+            try {
+                const filename = await articleService.uploadImage(file);
+                imageUrl = filename; // On stocke juste le nom du fichier
+            } catch (error) {
+                throw new Error('Erreur lors de l\'upload de l\'image');
+            }
+        }
+
+        const response = await api.put<Article>(`/articles/${id}`, {
+            ...data,
+            image: imageUrl
+        });
+
+        return {
+            ...response.data,
+            image: getImageUrl(response.data.image)
+        };
     },
 
     deleteArticle: async (id: number) => {
@@ -36,6 +104,9 @@ export const articleService = {
 
     getArticlesByCategoryId: async (categoryId: number) => {
         const response = await api.get<Article[]>(`/articles/category/${categoryId}`);
-        return response.data;
+        return response.data.map(article => ({
+            ...article,
+            image: getImageUrl(article.image)
+        }));
     },
 }; 
