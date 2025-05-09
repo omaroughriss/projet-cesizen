@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
@@ -40,56 +39,66 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Plus, Pencil, Trash2, Search, FileText, RefreshCw, Eye, Upload } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
-
-// Mock data
-const mockArticles = [
-  {
-    id: 1,
-    title: "Comprendre le stress chronique",
-    content: "Le stress chronique se distingue du stress aigu par sa durée et son impact. Contrairement au stress aigu qui est une réponse normale à un danger immédiat, le stress chronique persiste sur une longue période. Lorsque vous êtes constamment exposé à des situations stressantes, votre corps maintient un niveau élevé d'hormones de stress, ce qui peut entraîner divers problèmes de santé.\n\nLes symptômes courants du stress chronique comprennent des maux de tête récurrents, des troubles du sommeil, des problèmes digestifs, et une sensation constante d'anxiété. Sur le long terme, le stress chronique peut contribuer à des problèmes plus graves comme l'hypertension, les maladies cardiaques, et la dépression.\n\nPour gérer efficacement le stress chronique, il est important d'adopter plusieurs stratégies complémentaires. La pratique régulière d'activités physiques, les techniques de relaxation comme la méditation ou la respiration profonde, et le maintien d'un réseau social solide sont des éléments clés pour réduire les effets néfastes du stress.",
-    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=2080&auto=format&fit=crop",
-    category: "Stress"
-  },
-  {
-    id: 2,
-    title: "Améliorer la qualité de votre sommeil",
-    content: "La qualité du sommeil influence directement notre santé mentale, notre productivité et notre bien-être général. Pourtant, de nombreuses personnes souffrent d'insomnie ou de troubles du sommeil sans en connaître les causes ou les solutions.\n\nPlusieurs facteurs peuvent perturber votre cycle de sommeil : l'exposition aux écrans avant de dormir, la consommation de caféine ou d'alcool, un environnement de sommeil inadapté, et le stress. En comprenant ces facteurs, vous pouvez prendre des mesures pour améliorer votre sommeil.\n\nParmi les techniques efficaces, l'établissement d'une routine régulière de sommeil est primordial. Votre corps fonctionne selon un rythme circadien qui régule vos cycles de sommeil et d'éveil. En vous couchant et en vous levant à la même heure chaque jour, vous renforcez ce rythme naturel.\n\nL'environnement de sommeil joue également un rôle crucial. Une chambre fraîche, sombre et calme favorise un sommeil réparateur. Pensez à limiter l'exposition à la lumière bleue des écrans au moins une heure avant de vous coucher, car elle supprime la production de mélatonine, l'hormone du sommeil.",
-    image: "https://images.unsplash.com/photo-1541410965313-d53b3c16ef17?q=80&w=2048&auto=format&fit=crop",
-    category: "Sommeil"
-  },
-  {
-    id: 3,
-    title: "La gestion des émotions négatives",
-    content: "Les émotions négatives font partie intégrante de l'expérience humaine. Elles ne sont pas intrinsèquement mauvaises et peuvent même nous fournir des informations précieuses sur nos besoins et nos limites. Le problème survient lorsque ces émotions deviennent écrasantes ou lorsque nous les gérons de manière malsaine.\n\nLa première étape dans la gestion des émotions négatives est de les reconnaître et de les nommer. Cette simple prise de conscience peut souvent diminuer leur intensité et nous donner un sentiment de contrôle. Plutôt que de dire simplement 'Je me sens mal', essayez d'être plus précis : 'Je me sens frustré parce que...' ou 'Je ressens de l'anxiété à propos de...'\n\nUne fois que vous avez identifié vos émotions, vous pouvez explorer diverses stratégies pour les gérer. La pleine conscience vous permet d'observer vos émotions sans jugement, tandis que la restructuration cognitive vous aide à remettre en question les pensées négatives qui alimentent vos émotions.\n\nL'expression émotionnelle, que ce soit par la discussion, l'écriture ou l'art, peut également être bénéfique. N'oubliez pas que demander de l'aide à un ami de confiance ou à un professionnel de la santé mentale est un signe de force, pas de faiblesse.",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=2070&auto=format&fit=crop",
-    category: "Emotions"
-  }
-];
-
-const mockCategories = ["Stress", "Sommeil", "Emotions"];
+import { articleService, CreateArticleDto } from '@/services/article.service';
+import { Article, Category } from '@/types';
+import { categoryService } from '@/services/category.service';
 
 const ArticlesManagement: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [articles, setArticles] = useState(mockArticles);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
-  const [currentArticle, setCurrentArticle] = useState<any>(null);
-  const [newArticle, setNewArticle] = useState({ 
+  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
+  const [newArticle, setNewArticle] = useState<CreateArticleDto>({ 
     title: "", 
     content: "", 
     image: "", 
-    category: ""
+    categoryId: 0
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [editSelectedImage, setEditSelectedImage] = useState<File | null>(null);
 
+  useEffect(() => {
+    fetchArticles();
+    fetchCategories();
+  }, []);
+
+  const fetchArticles = async () => {
+    try {
+      const data = await articleService.getAllArticles();
+      setArticles(data);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les articles",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryService.getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les catégories",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredArticles = articles.filter(article => 
     article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    article.category.toLowerCase().includes(searchQuery.toLowerCase())
+    article.category.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>, type: "new" | "edit") => {
@@ -97,13 +106,11 @@ const ArticlesManagement: React.FC = () => {
     if (file) {
       if (type === "new") {
         setSelectedImage(file);
-        // Create object URL for preview
         const imageUrl = URL.createObjectURL(file);
         setNewArticle({ ...newArticle, image: imageUrl });
       } else {
         setEditSelectedImage(file);
         if (currentArticle) {
-          // Create object URL for preview
           const imageUrl = URL.createObjectURL(file);
           setCurrentArticle({ ...currentArticle, image: imageUrl });
         }
@@ -115,56 +122,88 @@ const ArticlesManagement: React.FC = () => {
     }
   };
 
-  const handleCreateArticle = () => {
-    const id = Math.max(...articles.map(a => a.id)) + 1;
-    setArticles([...articles, { ...newArticle, id }]);
-    setNewArticle({ title: "", content: "", image: "", category: "" });
-    setSelectedImage(null);
-    setIsCreateDialogOpen(false);
-    toast({
-      title: "Article créé",
-      description: "L'article a été créé avec succès",
-    });
-  };
-
-  const handleEditArticle = () => {
-    if (currentArticle) {
-      setArticles(articles.map(article => 
-        article.id === currentArticle.id ? currentArticle : article
-      ));
-      setCurrentArticle(null);
-      setEditSelectedImage(null);
-      setIsEditDialogOpen(false);
+  const handleCreateArticle = async () => {
+    try {
+      await articleService.createArticle(newArticle);
+      await fetchArticles();
+      setNewArticle({ title: "", content: "", image: "", categoryId: 0 });
+      setSelectedImage(null);
+      setIsCreateDialogOpen(false);
       toast({
-        title: "Article modifié",
-        description: "L'article a été modifié avec succès",
+        title: "Article créé",
+        description: "L'article a été créé avec succès",
+      });
+    } catch (error) {
+      console.error('Error creating article:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'article",
+        variant: "destructive",
       });
     }
   };
 
-  const handleDeleteArticle = () => {
+  const handleEditArticle = async () => {
     if (currentArticle) {
-      setArticles(articles.filter(article => article.id !== currentArticle.id));
-      setCurrentArticle(null);
-      setIsDeleteDialogOpen(false);
-      toast({
-        title: "Article supprimé",
-        description: "L'article a été supprimé avec succès",
-      });
+      try {
+        await articleService.updateArticle(currentArticle.id, {
+          title: currentArticle.title,
+          content: currentArticle.content,
+          image: currentArticle.image,
+          categoryId: currentArticle.categoryId
+        });
+        await fetchArticles();
+        setCurrentArticle(null);
+        setEditSelectedImage(null);
+        setIsEditDialogOpen(false);
+        toast({
+          title: "Article modifié",
+          description: "L'article a été modifié avec succès",
+        });
+      } catch (error) {
+        console.error('Error updating article:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de modifier l'article",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleDeleteArticle = async () => {
+    if (currentArticle) {
+      try {
+        await articleService.deleteArticle(currentArticle.id);
+        await fetchArticles();
+        setCurrentArticle(null);
+        setIsDeleteDialogOpen(false);
+        toast({
+          title: "Article supprimé",
+          description: "L'article a été supprimé avec succès",
+        });
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer l'article",
+          variant: "destructive",
+        });
+      }
     }
   };
   
-  const openEditDialog = (article: any) => {
+  const openEditDialog = (article: Article) => {
     setCurrentArticle({ ...article });
     setIsEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (article: any) => {
+  const openDeleteDialog = (article: Article) => {
     setCurrentArticle(article);
     setIsDeleteDialogOpen(true);
   };
 
-  const openPreviewDialog = (article: any) => {
+  const openPreviewDialog = (article: Article) => {
     setCurrentArticle(article);
     setIsPreviewDialogOpen(true);
   };
@@ -238,7 +277,7 @@ const ArticlesManagement: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="bg-cesilite/10 text-cesidark">
-                        {article.category}
+                        {article.category.categoryName}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -307,15 +346,17 @@ const ArticlesManagement: React.FC = () => {
             <div className="space-y-2">
               <label htmlFor="category" className="text-sm font-medium">Catégorie</label>
               <Select 
-                value={newArticle.category} 
-                onValueChange={(value) => setNewArticle({...newArticle, category: value})}
+                value={newArticle.categoryId.toString()} 
+                onValueChange={(value) => setNewArticle({...newArticle, categoryId: parseInt(value)})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockCategories.map((category) => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.categoryName}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -375,7 +416,7 @@ const ArticlesManagement: React.FC = () => {
               onClick={() => {
                 setIsCreateDialogOpen(false);
                 setSelectedImage(null);
-                setNewArticle({ title: "", content: "", image: "", category: "" });
+                setNewArticle({ title: "", content: "", image: "", categoryId: 0 });
               }}
             >
               Annuler
@@ -383,7 +424,7 @@ const ArticlesManagement: React.FC = () => {
             <Button 
               className="bg-cesilite hover:bg-cesidark"
               onClick={handleCreateArticle}
-              disabled={!newArticle.title || !newArticle.content || !newArticle.image || !newArticle.category}
+              disabled={!newArticle.title || !newArticle.content || !newArticle.image || !newArticle.categoryId}
             >
               Créer
             </Button>
@@ -415,15 +456,17 @@ const ArticlesManagement: React.FC = () => {
               <div className="space-y-2">
                 <label htmlFor="edit-category" className="text-sm font-medium">Catégorie</label>
                 <Select 
-                  value={currentArticle.category} 
-                  onValueChange={(value) => setCurrentArticle({...currentArticle, category: value})}
+                  value={currentArticle.categoryId.toString()} 
+                  onValueChange={(value) => setCurrentArticle({...currentArticle, categoryId: parseInt(value)})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Choisir une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockCategories.map((category) => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.categoryName}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -490,7 +533,7 @@ const ArticlesManagement: React.FC = () => {
             <Button 
               className="bg-cesilite hover:bg-cesidark"
               onClick={handleEditArticle}
-              disabled={!currentArticle?.title || !currentArticle?.content || !currentArticle?.image || !currentArticle?.category}
+              disabled={!currentArticle?.title || !currentArticle?.content || !currentArticle?.image || !currentArticle?.categoryId}
             >
               Enregistrer
             </Button>
@@ -508,7 +551,7 @@ const ArticlesManagement: React.FC = () => {
                   {currentArticle.title}
                 </DialogTitle>
                 <DialogDescription className="text-right text-xs text-muted-foreground">
-                  Catégorie: {currentArticle.category}
+                  Catégorie: {currentArticle.category.categoryName}
                 </DialogDescription>
               </DialogHeader>
               
@@ -526,7 +569,7 @@ const ArticlesManagement: React.FC = () => {
               
               <div className="space-y-4">
                 {currentArticle.content.split('\n\n').map((paragraph: string, idx: number) => (
-                  <p key={idx} className="text-foreground leading-relaxed">
+                  <p key={idx} className="text-foreground leading-relaxed whitespace-pre-wrap break-words max-w-full">
                     {paragraph}
                   </p>
                 ))}
