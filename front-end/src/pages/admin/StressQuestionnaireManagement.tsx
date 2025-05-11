@@ -151,18 +151,10 @@ const StressQuestionnaireManagement: React.FC = () => {
             onClick={() => navigate('/admin')}
           >
             <ArrowLeft className="w-5 h-5 text-cesidark mr-2" />
-            <span>Retour au panel admin</span>
+            <span>Retour au tableau de bord</span>
           </Button>
-          <Logo />
+          <h1 className="text-2xl font-bold text-cesidark">Gestion du questionnaire</h1>
         </header>
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cesidark mb-2">Gestion du questionnaire de stress</h1>
-          <p className="text-muted-foreground">
-            Ajoutez, modifiez ou supprimez les questions et leurs scores associés.
-          </p>
-        </div>
-
         <div className="mb-6 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold text-cesidark">Liste des questions ({questions.length})</h2>
