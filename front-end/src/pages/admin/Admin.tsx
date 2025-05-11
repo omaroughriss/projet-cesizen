@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -49,11 +48,10 @@ const Admin: React.FC = () => {
             <ArrowLeft className="w-5 h-5 text-cesidark mr-2" />
             <span>Retour à l'application</span>
           </Button>
-          <Logo svgLogo="/logo.svg" />
+          <h1 className="text-2xl font-bold text-cesidark">Administration CESIZen</h1>
         </header>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cesidark mb-2">Administration CESIZen</h1>
           <p className="text-muted-foreground">
             Gérez les utilisateurs, les articles et les catégories de votre application
           </p>
