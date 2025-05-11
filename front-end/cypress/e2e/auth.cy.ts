@@ -5,8 +5,8 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 });
 
 describe('Tests fonctionnels Authentification et Utilisateur', () => {
-    const validEmail = 'admin@example.com';
-    const validPassword = 'nouveaumotdepasse';
+    const validEmail = 'user@example.com';
+    const validPassword = 'Hola123';
     const invalidEmail = 'fake@example.com';
     const invalidPassword = 'mauvaismotdepasse';
 

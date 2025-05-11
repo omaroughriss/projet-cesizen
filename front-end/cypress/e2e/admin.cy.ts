@@ -9,7 +9,7 @@ describe('Tests fonctionnels Administration', () => {
         // Se connecter en tant qu'admin avant chaque test
         cy.visit('/login');
         cy.get('input#email').type('admin@example.com');
-        cy.get('input#password').type('nouveaumotdepasse');
+        cy.get('input#password').type('Hola123');
         cy.get('button[type="submit"]').click();
         // Attendre la redirection et le chargement
         cy.url().should('include', '/admin');
