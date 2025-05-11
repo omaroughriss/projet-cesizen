@@ -1,21 +1,27 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, BarChart2, User, Menu, BookText } from 'lucide-react';
+import { Home, BarChart2, User, Menu, BookText, Settings } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Logo from '@/components/Logo';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
+  const isAdmin = localStorage.getItem('userRole') === 'administrateur';
 
   const navItems = [
     { name: 'Accueil', path: '/', icon: Home },
     { name: 'Diagnostic', path: '/questionnaire', icon: BarChart2 },
     { name: 'Articles', path: '/articles', icon: BookText },
-    { name: 'Profil', path: '/profile', icon: User }
+    ...(isAdmin ? [
+      { name: 'Administration', path: '/admin', icon: Settings }
+    ] : []),
+    { name: 'Profil', path: '/profile', icon: User },
   ];
 
   if (isMobile) {
@@ -26,14 +32,14 @@ const Navbar: React.FC = () => {
             <NavLink 
               key={item.path} 
               to={item.path}
-              className={`flex flex-col items-center justify-center px-5 py-2 rounded-lg cesi-transition ${
+              className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg cesi-transition ${
                 isActive(item.path) 
                   ? 'text-cesilite font-medium bg-cesilite/10'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <item.icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{item.name}</span>
+              <item.icon className="w-4 h-4 mb-1" />
+              <span className="text-[10px]">{item.name}</span>
             </NavLink>
           ))}
         </div>
