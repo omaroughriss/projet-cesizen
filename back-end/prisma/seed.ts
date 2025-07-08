@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
@@ -195,4 +195,6 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });
+
+module.exports = {}; 
