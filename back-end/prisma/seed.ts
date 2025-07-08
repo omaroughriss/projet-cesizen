@@ -82,7 +82,7 @@ async function main() {
       data: {
         title: 'Comprendre l\'échelle de Holmes et Rahe',
         content: 'L\'échelle de Holmes et Rahe est un outil d\'évaluation du stress qui mesure l\'impact cumulatif des événements de vie stressants sur notre santé mentale. Développée par les psychiatres Thomas Holmes et Richard Rahe, cette échelle attribue des points à différents événements de vie, permettant d\'évaluer le risque de développer des problèmes de santé liés au stress...',
-        image: 'https://example.com/images/holmes-rahe-scale.jpg',
+        image: 'zen1.jpg',
         categoryId: categories[0].id,
       },
     }),
@@ -90,7 +90,7 @@ async function main() {
       data: {
         title: 'Techniques de Respiration Anti-stress',
         content: 'La respiration est l\'un des outils les plus puissants pour gérer le stress. Découvrez différentes techniques de respiration comme la cohérence cardiaque, la respiration 4-7-8, et la respiration carrée. Ces méthodes simples peuvent être pratiquées n\'importe où et à tout moment pour réduire rapidement le niveau de stress...',
-        image: 'https://example.com/images/breathing-techniques.jpg',
+        image: 'zen2.jpg',
         categoryId: categories[0].id,
       },
     }),
@@ -100,7 +100,7 @@ async function main() {
       data: {
         title: 'L\'importance de l\'Intelligence Émotionnelle',
         content: 'L\'intelligence émotionnelle est la capacité à reconnaître, comprendre et gérer ses propres émotions, ainsi que celles des autres. Découvrez comment développer votre conscience émotionnelle et améliorer vos relations interpersonnelles...',
-        image: 'https://example.com/images/emotional-intelligence.jpg',
+        image: 'zen3.jpg',
         categoryId: categories[1].id,
       },
     }),
@@ -108,7 +108,7 @@ async function main() {
       data: {
         title: 'La Pratique de la Pleine Conscience',
         content: 'La pleine conscience est une pratique qui nous aide à vivre dans le moment présent. Apprenez des exercices simples de mindfulness pour réduire l\'anxiété, améliorer la concentration et développer une plus grande paix intérieure...',
-        image: 'https://example.com/images/mindfulness.jpg',
+        image: 'zen4.jpg',
         categoryId: categories[1].id,
       },
     }),
@@ -118,7 +118,7 @@ async function main() {
       data: {
         title: 'Construire des Relations Saines',
         content: 'Les relations sociales positives sont essentielles pour notre santé mentale. Découvrez les clés pour développer et maintenir des relations enrichissantes, établir des limites saines et communiquer efficacement avec les autres...',
-        image: 'https://example.com/images/healthy-relationships.jpg',
+        image: 'zen5.jpg',
         categoryId: categories[2].id,
       },
     }),
@@ -126,7 +126,7 @@ async function main() {
       data: {
         title: 'Surmonter l\'Isolement Social',
         content: 'L\'isolement social peut avoir un impact significatif sur notre bien-être mental. Apprenez des stratégies pratiques pour créer des connexions significatives, maintenir des liens sociaux et combattre la solitude...',
-        image: 'https://example.com/images/social-connection.jpg',
+        image: 'zen6.jpg',
         categoryId: categories[2].id,
       },
     }),
