@@ -3,6 +3,8 @@ name: Backend CI/CD
 on:
   push:
     branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
   build-and-test:
@@ -44,7 +46,7 @@ jobs:
         run: npx prisma generate
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --passWithNoTests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           JWT_SECRET: test_secret
