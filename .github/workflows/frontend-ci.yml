@@ -26,6 +26,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-test:
+    needs: lint
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -61,7 +62,7 @@ jobs:
           config: baseUrl=http://localhost:4173
 
   docker-build-push:
-    needs: [build-and-test, lint]
+    needs: [build-and-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
