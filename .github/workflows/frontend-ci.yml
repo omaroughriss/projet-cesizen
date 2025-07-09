@@ -44,6 +44,9 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -58,13 +61,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,format=long
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./front-end
           push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/front-end:latest
-            ghcr.io/${{ github.repository }}/front-end:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max 
