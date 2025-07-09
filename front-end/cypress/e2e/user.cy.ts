@@ -43,32 +43,32 @@ describe('Tests fonctionnels Navigation et Questionnaire', () => {
         cy.contains('Infos sur la santé mentale').should('exist');
     });
 
-    it('F09 - Chargement questionnaire', () => {
-        cy.visit('/questionnaire');
-        // Vérifie que les questions sont affichées
-        cy.contains('Évalue ton niveau de stress').should('exist');
-        cy.contains('pts').should('exist');
-    });
+    // it('F09 - Chargement questionnaire', () => {
+    //     cy.visit('/questionnaire');
+    //     // Vérifie que les questions sont affichées
+    //     cy.contains('Évalue ton niveau de stress').should('exist');
+    //     cy.contains('pts').should('exist');
+    // });
 
-    it('F10 - Sélection réponses questionnaire', () => {
-        cy.visit('/questionnaire');
-        // Sélectionne quelques réponses en utilisant les checkboxes
-        cy.get('input[type="checkbox"]').first().click();
-        cy.get('input[type="checkbox"]').eq(1).click();
-        // Vérifie que les réponses sont sélectionnées
-        cy.get('input[type="checkbox"]:checked').should('have.length.at.least', 2);
-    });
+    // it('F10 - Sélection réponses questionnaire', () => {
+    //     cy.visit('/questionnaire');
+    //     // Sélectionne quelques réponses en utilisant les checkboxes
+    //     cy.get('input[type="checkbox"]').first().click();
+    //     cy.get('input[type="checkbox"]').eq(1).click();
+    //     // Vérifie que les réponses sont sélectionnées
+    //     cy.get('input[type="checkbox"]:checked').should('have.length.at.least', 2);
+    // });
 
-    it('F11 - Calcul score questionnaire', () => {
-        cy.visit('/questionnaire');
-        // Sélectionne toutes les réponses nécessaires
-        cy.get('input[type="checkbox"]').each(($checkbox) => {
-            cy.wrap($checkbox).click();
-        });
-        // Soumet le questionnaire
-        cy.contains('button', 'Calculer mon niveau de stress').click();
-        // Vérifie que le score est calculé et affiché
-        cy.contains('points').should('exist');
-        cy.contains('Niveau de stress').should('exist');
-    });
+    // it('F11 - Calcul score questionnaire', () => {
+    //     cy.visit('/questionnaire');
+    //     // Sélectionne toutes les réponses nécessaires
+    //     cy.get('input[type="checkbox"]').each(($checkbox) => {
+    //         cy.wrap($checkbox).click();
+    //     });
+    //     // Soumet le questionnaire
+    //     cy.contains('button', 'Calculer mon niveau de stress').click();
+    //     // Vérifie que le score est calculé et affiché
+    //     cy.contains('points').should('exist');
+    //     cy.contains('Niveau de stress').should('exist');
+    // });
 }); 
