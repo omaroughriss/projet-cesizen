@@ -61,7 +61,7 @@ jobs:
           config: baseUrl=http://localhost:4173
 
   docker-build-push:
-    needs: build-and-test
+    needs: [build-and-test, lint]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
