@@ -83,4 +83,4 @@ jobs:
         with:
           context: ./back-end
           push: true
-          tags: ghcr.io/cesizen-back-end:${{ github.ref_name }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
