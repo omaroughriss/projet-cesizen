@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configuration de base pour axios
-export const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://cesizen.pspd.fr';
+export const API_URL = import.meta.env.VITE_API_BASE_URL || 'https://54.162.72.80:3001';
 
 export const api = axios.create({
     baseURL: API_URL,
