@@ -21,9 +21,5 @@ RUN npm run build
 # Exposition du port
 EXPOSE 4173
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:4173/ || exit 1
-
 # Commande de démarrage
 CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
