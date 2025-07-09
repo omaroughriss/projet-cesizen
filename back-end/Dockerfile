@@ -36,5 +36,5 @@ COPY --from=builder /app/prisma ./prisma
 COPY init.sh ./
 RUN chmod +x init.sh
 
-EXPOSE 3000
+EXPOSE 3001
 CMD ["./init.sh"]

@@ -66,7 +66,7 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
-L'API sera accessible à l'adresse `http://localhost:3000`
+L'API sera accessible à l'adresse `http://localhost:3001`
 
 ## Installation de l'Application Mobile
 
