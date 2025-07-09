@@ -34,9 +34,9 @@ const Home: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-cesidark">
-              Bienvenuuue, <span className="text-cesilite">{userName}</span>
+              Bienvenue, <span className="text-cesilite">{userName}</span>
             </h1>
-            <p className="text-muted-foreground text-sm">Comment allez-vous aujourd'hui ?</p>
+            <p className="text-muted-foreground text-sm">Comment allez-vous aujourd'hui ??</p>
           </div>
         </div>
       </header>
