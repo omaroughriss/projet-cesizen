@@ -5,6 +5,29 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./front-end
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINTER_RULES_PATH: ./front-end
+          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json
+          VALIDATE_TYPESCRIPT_ES: true
+
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
