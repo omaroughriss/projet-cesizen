@@ -75,6 +75,6 @@ jobs:
         with:
           context: ./front-end
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          tags: ghcr.io/cesizen-front-end:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max 
