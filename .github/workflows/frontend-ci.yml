@@ -65,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/frontend
+          images: ghcr.io/${{ github.repository_owner }}/cesizen-frontend
           tags: |
             type=ref,event=branch
             type=sha,format=long
@@ -75,6 +75,6 @@ jobs:
         with:
           context: ./front-end
           push: true
-          tags: ghcr.io/cesizen-front-end:${{ github.ref_name }}
+          tags: ghcr.io/${{ github.repository_owner }}/cesizen-frontend:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max 
