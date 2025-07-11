@@ -5,7 +5,48 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./front-end
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./front-end
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './front-end/package-lock.json'
+
+      - name: Run security audit
+        run: npm audit --audit-level=none || true
+
   build-and-test:
+    needs: [lint, security-audit]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -41,7 +82,7 @@ jobs:
           config: baseUrl=http://localhost:4173
 
   docker-build-push:
-    needs: build-and-test
+    needs: [build-and-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
